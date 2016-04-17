@@ -1,13 +1,34 @@
 from flask import *
+from celery import Celery
 
 
+# Initialize and configure Flask
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'top secret'
+app.config['SECRET_KEY'] = 'top-secret'
+app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
 
 
-@app.route('/', methods=['GET'])
+# Initialize Celery
+celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+celery.conf.update(app.config)
+
+
+@celery.task
+def add_async(x, y):
+    return x + y
+
+
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html')
+    if request.method == 'GET':
+        return render_template('index.html')
+    else:
+        x = int(request.form['x'])
+        y = int(request.form['y'])
+        add_async.delay(x, y)
+        flash('Added {0} and {1} together!'.format(x, y))
+        return redirect(url_for('index'))
 
 
 @app.route('/hello/', methods=['GET'])
@@ -17,4 +38,4 @@ def hello(name=None):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)  # http://127.0.0.1:5000/
+    app.run(debug=True)

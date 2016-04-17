@@ -9,6 +9,15 @@
     <body>
         <h1>Twitter Visualization Demo</h1>
 
+        <form method="POST">
+            <p>Add these numbers: <input type="text" name="x"> <input type="text" name="y"></p>
+            <input type="submit" name="submit" value="Submit">
+        </form>
+
+        {% for message in get_flashed_messages() %}
+            <p>{{ message }}</p>
+        {% endfor %}
+
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js"></script>
     </body>
