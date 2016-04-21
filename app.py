@@ -1,17 +1,25 @@
 from flask import *
+from flask_socketio import *
 from celery import Celery, chain
+
 
 # Initialize and configure Flask
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'top-secret'
+app.config['SECRET_KEY'] = 'secret'
 app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
 app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
 app.config['BROKER_TRANSPORT'] = 'redis'
 
+# Initialize SocketIO
+socketio = SocketIO(app)
 
-# Initialize Celery
+# Initialize and configure Celery
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
+
+
+def handle_message(message):
+    socketio.emit('task complete', {'data': 'Received message: {0}'.format(str(message))})
 
 
 @celery.task
@@ -24,6 +32,11 @@ def multiply(x, y):
     return x * y
 
 
+@celery.task
+def generate_message(message):
+    handle_message(message)
+
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'GET':
@@ -31,7 +44,7 @@ def index():
     else:
         x = int(request.form['x'])
         y = int(request.form['y'])
-        chain(add.s(x, y), multiply.s(10)).apply_async()
+        chain(add.s(x, y), multiply.s(10), generate_message.s()).apply_async()
         flash('Added {0} and {1} together and multiplied by 10!'.format(x, y))
         return redirect(url_for('index'))
 
@@ -49,4 +62,4 @@ def hello(name=None):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app, debug=True)
