@@ -1,3 +1,4 @@
+import time
 from flask import *
 from flask_socketio import *
 from celery import Celery, chain
@@ -8,18 +9,15 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret'
 app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
 app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+app.config['SOCKETIO_REDIS_URL'] = 'redis://localhost:6379/0'
 app.config['BROKER_TRANSPORT'] = 'redis'
 
 # Initialize SocketIO
-socketio = SocketIO(app)
+socketio = SocketIO(app, message_queue=app.config['SOCKETIO_REDIS_URL'])
 
 # Initialize and configure Celery
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
-
-
-def handle_message(message):
-    socketio.emit('task complete', {'data': 'Received message: {0}'.format(str(message))})
 
 
 @celery.task
@@ -33,26 +31,22 @@ def multiply(x, y):
 
 
 @celery.task
-def generate_message(message):
-    handle_message(message)
+def generate_message(message, queue):
+    time.sleep(1)
+    local = SocketIO(message_queue=queue)
+    local.emit('task complete', {'data': 'The answer is: {0}'.format(str(message))})
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 def index():
-    if request.method == 'GET':
-        return render_template('index.html')
-    else:
-        x = int(request.form['x'])
-        y = int(request.form['y'])
-        chain(add.s(x, y), multiply.s(10), generate_message.s()).apply_async()
-        flash('Added {0} and {1} together and multiplied by 10!'.format(x, y))
-        return redirect(url_for('index'))
+    return render_template('index.html')
 
 
 @app.route('/submit/<int:x>/<int:y>', methods=['POST'])
 def submit(x, y):
-    result = add.apply_async((x, y))
-    return str(result.get())
+    queue = app.config['SOCKETIO_REDIS_URL']
+    chain(add.s(x, y), multiply.s(10), generate_message.s(queue)).apply_async()
+    return 'Waiting for a reply...'
 
 
 @app.route('/hello/', methods=['GET'])
