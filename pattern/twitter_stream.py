@@ -1,5 +1,3 @@
-import os, sys; sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-
 import time
 
 from pattern.web import Twitter
@@ -11,9 +9,8 @@ from pattern.web import Twitter
 # Twitter.stream() gives us the most recent tweets.
 
 # It might take a few seconds to set up the stream.
-stream = Twitter().stream("I hate", timeout=30)
+stream = Twitter().stream("win", timeout=30)
 
-#while True:
 for i in range(100):
     print i
     # Poll Twitter to see if there are new tweets.
@@ -22,7 +19,6 @@ for i in range(100):
     # with the latest tweet at the end of the list.
     for tweet in reversed(stream):
         print tweet.text
-        print tweet.language
     # Clear the buffer every so often.
     stream.clear()
     # Wait awhile between polls.
