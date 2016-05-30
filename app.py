@@ -46,7 +46,7 @@ def create_stream(phrase, queue):
     for i in range(100):
         stream.update()
         for tweet in reversed(stream):
-            local.emit('tweet', {'data': str(tweet.text)})
+            local.emit('tweet', {'data': str(tweet.text.encode('ascii', 'ignore'))})
         stream.clear()
         time.sleep(1)
 
