@@ -76,5 +76,10 @@ def hello(name=None):
     return render_template('hello.html', name=name)
 
 
+@app.route('/d3', methods=['GET'])
+def d3():
+    return render_template('d3.html')
+
+
 if __name__ == '__main__':
     socketio.run(app, debug=True)
