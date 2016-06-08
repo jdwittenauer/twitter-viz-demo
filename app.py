@@ -56,6 +56,22 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/hello/', methods=['GET'])
+@app.route('/hello/<name>', methods=['GET'])
+def hello(name=None):
+    return render_template('hello.html', name=name)
+
+
+@app.route('/d3', methods=['GET'])
+def d3():
+    return render_template('d3.html')
+
+
+@app.route('/celery', methods=['GET'])
+def celery():
+    return render_template('celery.html')
+
+
 @app.route('/submit/<int:x>/<int:y>', methods=['POST'])
 def submit(x, y):
     queue = app.config['SOCKETIO_REDIS_URL']
@@ -68,17 +84,6 @@ def twitter(phrase):
     queue = app.config['SOCKETIO_REDIS_URL']
     create_stream.apply_async(args=[phrase, queue])
     return 'Establishing connection...'
-
-
-@app.route('/hello/', methods=['GET'])
-@app.route('/hello/<name>', methods=['GET'])
-def hello(name=None):
-    return render_template('hello.html', name=name)
-
-
-@app.route('/d3', methods=['GET'])
-def d3():
-    return render_template('d3.html')
 
 
 if __name__ == '__main__':

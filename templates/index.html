@@ -41,16 +41,6 @@
         <div class="container">
             <h1>Twitter Visualization Demo</h1>
 
-            <p class="lead">Add these numbers (x 10): <input type="text" id="x" name="x"> <input type="text" id="y" name="y"></p>
-            <button id="submit" class="btn btn-default">Submit</button>
-
-            <br /><br />
-
-            <p id="status" class="lead"></p>
-            <div id="results" class="lead"></div>
-
-            <br /><br />
-
             <p class="lead">Twitter search phrase: <input type="text" id="phrase" name="phrase"></p>
             <button id="begin" class="btn btn-default">Begin Twitter Feed</button>
 
@@ -65,23 +55,6 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js"></script>
         <script>
-            function submit() {
-                x = $('#x').val();
-                y = $('#y').val();
-                url = '/submit/' + x + '/' + y;
-
-                $.ajax({
-                    type: 'POST',
-                    url: url,
-                    success: function(data, status, request) {
-                        $('#status').html(data);
-                    },
-                    error: function() {
-                        alert('An error occurred submitting the request.');
-                    }
-                });
-            }
-
             function twitter() {
                 phrase = $('#phrase').val();
                 url = encodeURI('/twitter/' + phrase);
@@ -101,13 +74,6 @@
             $(function() {
                 var socket = io.connect('http://' + document.domain + ':' + location.port);
 
-                socket.on('task complete', function(msg) {
-                    $('#x').val('');
-                    $('#y').val('');
-                    $('#status').html('Complete!');
-                    $('#results').append('<br>' + $('<div/>').text(msg.data).html());
-                });
-
                 socket.on('tweet', function(msg) {
                     $('#phrase').val('');
 
@@ -118,7 +84,6 @@
                     $('#twitter-results').append('<br>' + $('<div/>').text(msg.data).html());
                 });
 
-                $('#submit').click(submit);
                 $('#begin').click(twitter);
             });
         </script>
