@@ -21,6 +21,7 @@ celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
 
 
+# Various tasks used for testing
 @celery.task
 def add(x, y):
     return x + y
@@ -38,6 +39,7 @@ def generate_message(message, queue):
     local.emit('task complete', {'data': 'The answer is: {0}'.format(str(message))})
 
 
+# Main page tasks
 @celery.task
 def create_stream(phrase, queue):
     local = SocketIO(message_queue=queue)
@@ -51,15 +53,16 @@ def create_stream(phrase, queue):
         time.sleep(1)
 
 
-@app.route('/', methods=['GET'])
-def index():
-    return render_template('index.html')
-
-
+# Various routes used for testing
 @app.route('/hello/', methods=['GET'])
 @app.route('/hello/<name>', methods=['GET'])
 def hello(name=None):
     return render_template('hello.html', name=name)
+
+
+@app.route('/message', methods=['GET'])
+def message():
+    return render_template('message.html')
 
 
 @app.route('/d3', methods=['GET'])
@@ -67,16 +70,17 @@ def d3():
     return render_template('d3.html')
 
 
-@app.route('/celery', methods=['GET'])
-def celery():
-    return render_template('celery.html')
-
-
 @app.route('/submit/<int:x>/<int:y>', methods=['POST'])
 def submit(x, y):
     queue = app.config['SOCKETIO_REDIS_URL']
     chain(add.s(x, y), multiply.s(10), generate_message.s(queue)).apply_async()
     return 'Waiting for a reply...'
+
+
+# Main page routes
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
 
 
 @app.route('/twitter/<phrase>', methods=['POST'])
