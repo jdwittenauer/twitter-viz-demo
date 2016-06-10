@@ -10,6 +10,7 @@
 
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.3/nv.d3.min.css">
 
         <style>
             body {
@@ -19,6 +20,12 @@
 
             .width-100 {
                 width: 100%;
+            }
+
+            .fixed-height-600 {
+                min-height: 600px;
+                max-height: 600px;
+                overflow-y: scroll;
             }
 
             .chart svg {
@@ -64,7 +71,7 @@
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div id="twitter-results" class="lead"></div>
+                    <div id="twitter-results" class="lead fixed-height-600"></div>
                 </div>
             </div>
         </div>
@@ -77,8 +84,6 @@
         <script>
             nv.addGraph(function() {
               var chart = nv.models.scatterChart()
-                            .showDistX(true)
-                            .showDistY(true)
                             .color(d3.scale.category10().range());
 
               chart.xAxis.tickFormat(d3.format('.02f'));
