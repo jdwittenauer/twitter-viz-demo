@@ -12,5 +12,4 @@ Experiment using various python-based technologies.  Initial version still in-pr
 
 ## Twitter Training Dataset
 
-The dataset used to train models for this experiment can be found 
-[here](http://thinknook.com/wp-content/uploads/2012/09/Sentiment-Analysis-Dataset.zip).
+The dataset used to train models for this experiment can be found [here](http://thinknook.com/wp-content/uploads/2012/09/Sentiment-Analysis-Dataset.zip)
