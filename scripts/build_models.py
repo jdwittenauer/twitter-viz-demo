@@ -6,19 +6,17 @@ try:
 except NameError:
     sys.path.append(os.getcwd() + '\\scripts')
 
+import pickle
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import classification_report
 from tokenizer import *
-
-
-data_dir = 'C:\\Users\\jdwittenauer\\Documents\Git\\twitter-viz-demo\\scripts\\'
 
 
 def main():
     print('Reading in data file...')
-    data = pd.read_csv(data_dir + 'Sentiment Analysis Dataset.csv',
+    dir = 'C:\\Users\\jdwittenauer\\Documents\Git\\twitter-viz-demo\\scripts\\'
+    data = pd.read_csv(dir + 'Sentiment Analysis Dataset.csv',
                        usecols=['Sentiment', 'SentimentText'], error_bad_lines=False)
 
     print('Pre-processing tweet text...')
@@ -31,12 +29,11 @@ def main():
     print('Training sentiment classification model...')
     classifier = MultinomialNB()
     classifier.fit(X, y)
-    print('complete')
 
-    y_pred = classifier.predict(X)
-
-    label_names = ['Negative', 'Positive']
-    print(classification_report(y, y_pred, target_names=label_names))
+    print('Saving model to disk...')
+    f = open(dir + 'classifier.pkl', 'wb')
+    pickle.dump(classifier, f)
+    f.close()
 
     print('Process complete.')
 

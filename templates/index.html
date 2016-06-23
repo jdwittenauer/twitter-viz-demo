@@ -63,6 +63,7 @@
             <br /><br />
 
             <p id="twitter-status" class="lead"></p>
+            <div id="twitter-sentiment" class="lead"></div>
 
             <div class="row">
                 <div class="col-md-8">
@@ -150,6 +151,7 @@
                     }
 
                     $('#twitter-results').append('<br>' + $('<div/>').text(msg.data).html());
+                    $('#twitter-sentiment').append('<br>' + $('<div/>').text(msg.sentiment).html());
                 });
 
                 $('#begin').click(twitter);

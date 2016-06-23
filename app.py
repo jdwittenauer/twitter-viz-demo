@@ -1,4 +1,5 @@
 import time
+import pickle
 from flask import *
 from flask_socketio import *
 from celery import Celery, chain
@@ -19,6 +20,15 @@ socketio = SocketIO(app, message_queue=app.config['SOCKETIO_REDIS_URL'])
 # Initialize and configure Celery
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
+
+# Load sentiment classification model
+f = open('/scripts/classifier.pkl', 'rb')
+classifier = pickle.load(f)
+f.close()
+
+
+def classify_tweet(tweet):
+    return 1
 
 
 # Various tasks used for testing
@@ -48,7 +58,8 @@ def create_stream(phrase, queue):
     for i in range(100):
         stream.update()
         for tweet in reversed(stream):
-            local.emit('tweet', {'data': str(i) + ' ' + str(tweet.text.encode('ascii', 'ignore'))})
+            local.emit('tweet', {'data': str(i) + ' ' + str(tweet.text.encode('ascii', 'ignore')),
+                                 'sentiment': classify_tweet(tweet)})
         stream.clear()
         time.sleep(1)
 
