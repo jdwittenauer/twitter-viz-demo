@@ -1,9 +1,14 @@
+import os
 import time
-import pickle
+import numpy as np
 from flask import *
 from flask_socketio import *
 from celery import Celery, chain
 from pattern.web import Twitter
+from sklearn.externals import joblib
+
+path = os.path.realpath('') + '/scripts/'
+sys.path.append(path)
 
 
 # Initialize and configure Flask
@@ -13,6 +18,7 @@ app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
 app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
 app.config['SOCKETIO_REDIS_URL'] = 'redis://localhost:6379/0'
 app.config['BROKER_TRANSPORT'] = 'redis'
+app.config['CELERY_ACCEPT_CONTENT'] = ['pickle']
 
 # Initialize SocketIO
 socketio = SocketIO(app, message_queue=app.config['SOCKETIO_REDIS_URL'])
@@ -22,13 +28,14 @@ celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
 
 # Load sentiment classification model
-f = open('/scripts/classifier.pkl', 'rb')
-classifier = pickle.load(f)
-f.close()
+vectorizer = joblib.load(path + 'vectorizer.pkl')
+classifier = joblib.load(path + 'classifier.pkl')
 
 
+# Function to transform and classify a tweet as positive or negative sentiment
 def classify_tweet(tweet):
-    return 1
+    pred = classifier.predict(vectorizer.transform(np.array([tweet.text])))
+    return str(pred[0])
 
 
 # Various tasks used for testing
