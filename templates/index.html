@@ -63,7 +63,6 @@
             <br /><br />
 
             <p id="twitter-status" class="lead"></p>
-            <div id="twitter-sentiment" class="lead"></div>
 
             <div class="row">
                 <div class="col-md-8">
@@ -83,45 +82,23 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.3/nv.d3.min.js"></script>
         <script>
-            nv.addGraph(function() {
-              var chart = nv.models.scatterChart()
-                            .color(d3.scale.category10().range());
+            var data = [{values: []}];
 
-              chart.xAxis.tickFormat(d3.format('.02f'));
-              chart.yAxis.tickFormat(d3.format('.02f'));
+            function loadGraph() {
+                var chart = nv.models.discreteBarChart()
+                    .x(function(d) { return d.label })
+                    .y(function(d) { return d.value })
+                    .staggerLabels(false);
 
-              d3.select('#chart svg')
-                  .datum(data(4,40))
-                .transition().duration(500)
-                  .call(chart);
+                d3.select('#chart svg')
+                    .datum(data)
+                    .transition()
+                    .duration(500)
+                    .call(chart);
 
-              nv.utils.windowResize(chart.update);
+                nv.utils.windowResize(chart.update);
 
-              return chart;
-            });
-
-            function data(groups, points) {
-              var data = [],
-                  shapes = ['circle', 'cross', 'triangle-up', 'triangle-down', 'diamond', 'square'],
-                  random = d3.random.normal();
-
-              for (i = 0; i < groups; i++) {
-                data.push({
-                  key: 'Group ' + i,
-                  values: []
-                });
-
-                for (j = 0; j < points; j++) {
-                  data[i].values.push({
-                    x: random()
-                  , y: random()
-                  , size: Math.random()
-                  //, shape: shapes[j % 6]
-                  });
-                }
-              }
-
-              return data;
+                return chart;
             }
 
             function twitter() {
@@ -150,11 +127,14 @@
                         $('#twitter-status').html('Connection established!');
                     }
 
-                    $('#twitter-results').append('<br>' + $('<div/>').text(msg.data).html());
-                    $('#twitter-sentiment').append('<br>' + $('<div/>').text(msg.sentiment).html());
+                    data[0].values.push({"label": msg.id, "value": parseInt(msg.sentiment)})
+                    loadGraph();
+
+                    $('#twitter-results').append('<br>' + $('<div/>').text(msg.id + ' ' + msg.data).html());
                 });
 
                 $('#begin').click(twitter);
+                nv.addGraph(loadGraph);
             });
         </script>
     </body>

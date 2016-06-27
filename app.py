@@ -35,7 +35,11 @@ classifier = joblib.load(path + 'classifier.pkl')
 # Function to transform and classify a tweet as positive or negative sentiment
 def classify_tweet(tweet):
     pred = classifier.predict(vectorizer.transform(np.array([tweet.text])))
-    return str(pred[0])
+
+    if pred[0] == 1:
+        return '1'
+    else:
+        return '-1'
 
 
 # Various tasks used for testing
@@ -65,7 +69,8 @@ def create_stream(phrase, queue):
     for i in range(100):
         stream.update()
         for tweet in reversed(stream):
-            local.emit('tweet', {'data': str(i) + ' ' + str(tweet.text.encode('ascii', 'ignore')),
+            local.emit('tweet', {'id': str(i),
+                                 'data': str(tweet.text.encode('ascii', 'ignore')),
                                  'sentiment': classify_tweet(tweet)})
         stream.clear()
         time.sleep(1)

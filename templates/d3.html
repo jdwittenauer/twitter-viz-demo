@@ -26,22 +26,22 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.3/nv.d3.min.js"></script>
         <script>
             nv.addGraph(function() {
-              var chart = nv.models.scatterChart()
-                            .showDistX(true)
-                            .showDistY(true)
-                            .color(d3.scale.category10().range());
+                var chart = nv.models.scatterChart()
+                    .showDistX(true)
+                    .showDistY(true)
+                    .color(d3.scale.category10().range());
 
-              chart.xAxis.tickFormat(d3.format('.02f'));
-              chart.yAxis.tickFormat(d3.format('.02f'));
+                chart.xAxis.tickFormat(d3.format('.02f'));
+                chart.yAxis.tickFormat(d3.format('.02f'));
 
-              d3.select('#chart1 svg')
-                  .datum(data1(4,40))
-                .transition().duration(500)
-                  .call(chart);
+                d3.select('#chart1 svg')
+                    .datum(data1(4,40))
+                    .transition().duration(500)
+                    .call(chart);
 
-              nv.utils.windowResize(chart.update);
+                nv.utils.windowResize(chart.update);
 
-              return chart;
+                return chart;
             });
 
             nv.addGraph(function() {
@@ -56,8 +56,7 @@
                 d3.select('#chart2 svg')
                     .datum(data2())
                     .transition().duration(500)
-                    .call(chart)
-                    ;
+                    .call(chart);
 
                 nv.utils.windowResize(chart.update);
 
