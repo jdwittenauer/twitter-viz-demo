@@ -1,4 +1,3 @@
-
 #!/bin/bash
 if [ ! -d redis-stable/src ]; then
     curl -O http://download.redis.io/redis-stable.tar.gz

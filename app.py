@@ -3,7 +3,7 @@ import time
 import numpy as np
 from flask import *
 from flask_socketio import *
-from celery import Celery
+from celery import Celery, chain
 from pattern.web import Twitter
 from sklearn.externals import joblib
 
@@ -53,7 +53,7 @@ def create_stream(phrase, queue):
     local = SocketIO(message_queue=queue)
     stream = Twitter().stream(phrase, timeout=30)
 
-    for i in range(100):
+    for i in range(60):
         stream.update()
         for tweet in reversed(stream):
             local.emit('tweet', {'id': str(i),
@@ -61,6 +61,17 @@ def create_stream(phrase, queue):
                                  'sentiment': classify_tweet(tweet)})
         stream.clear()
         time.sleep(1)
+
+    return queue
+
+
+@celery.task
+def send_complete_message(queue):
+    """
+    Celery task that notifies the client that the twitter loop has completed executing.
+    """
+    local = SocketIO(message_queue=queue)
+    local.emit('complete', {'data': 'Operation complete!'})
 
 
 @app.route('/', methods=['GET'])
@@ -78,7 +89,8 @@ def twitter(phrase):
     a connection to twitter.
     """
     queue = app.config['SOCKETIO_REDIS_URL']
-    create_stream.apply_async(args=[phrase, queue])
+    # create_stream.apply_async(args=[phrase, queue])
+    chain(create_stream.s(phrase, queue), send_complete_message.s()).apply_async()
     return 'Establishing connection...'
 
 

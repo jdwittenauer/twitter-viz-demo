@@ -123,14 +123,18 @@
                 socket.on('tweet', function(msg) {
                     $('#phrase').val('');
 
-                    if ($('#twitter-status').html() != 'Connection established!') {
-                        $('#twitter-status').html('Connection established!');
+                    if ($('#twitter-status').html() != 'Connection established.') {
+                        $('#twitter-status').html('Connection established.');
                     }
 
                     data[0].values.push({"label": msg.id, "value": parseInt(msg.sentiment)})
                     loadGraph();
 
                     $('#twitter-results').append('<br>' + $('<div/>').text(msg.id + ' ' + msg.data).html());
+                });
+
+                socket.on('complete', function(msg) {
+                    $('#twitter-status').html(msg.data);
                 });
 
                 $('#begin').click(twitter);
