@@ -1,4 +1,8 @@
 import os
+import sys
+path = os.path.realpath('') + '/scripts/'
+sys.path.append(path)
+
 import time
 import numpy as np
 from flask import *
@@ -6,9 +10,6 @@ from flask_socketio import *
 from celery import Celery, chain
 from pattern.web import Twitter
 from sklearn.externals import joblib
-
-path = os.path.realpath('') + '/scripts/'
-sys.path.append(path)
 
 
 # Initialize and configure Flask
@@ -27,7 +28,7 @@ socketio = SocketIO(app, message_queue=app.config['SOCKETIO_REDIS_URL'])
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
 
-# Load sentiment classification model
+# Load transforms and models
 vectorizer = joblib.load(path + 'vectorizer.pkl')
 classifier = joblib.load(path + 'classifier.pkl')
 
