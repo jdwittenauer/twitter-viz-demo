@@ -82,13 +82,15 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.3/nv.d3.min.js"></script>
         <script>
-            var data = [{values: []}];
+            var data = [{key: 'Negative', values: []}, {key: 'Positive', values: []}];
 
             function loadGraph() {
-                var chart = nv.models.discreteBarChart()
-                    .x(function(d) { return d.label })
-                    .y(function(d) { return d.value })
-                    .staggerLabels(false);
+                var chart = nv.models.scatterChart()
+                    .pointRange([2000, 2000])
+                    .color(d3.scale.category10().range());
+
+                chart.xAxis.tickFormat(d3.format('.02f'));
+                chart.yAxis.tickFormat(d3.format('.02f'));
 
                 d3.select('#chart svg')
                     .datum(data)
@@ -123,14 +125,22 @@
                 socket.on('tweet', function(msg) {
                     $('#phrase').val('');
 
-                    if ($('#twitter-status').html() != 'Connection established.') {
-                        $('#twitter-status').html('Connection established.');
-                    }
+                    $('#twitter-status').html(
+                        'Connection established. Streaming for 60 seconds (currently at ' + msg.id + ')...');
 
-                    data[0].values.push({"label": msg.id, "value": parseInt(msg.sentiment)})
+                    sentiment = parseInt(msg.sentiment);
+                    x = parseFloat(msg.x);
+                    y = parseFloat(msg.y);
+                    data[sentiment].values.push({
+                        id: msg.id,
+                        x: x,
+                        y: y,
+                        size: 2000,
+                        shape: "circle"});
                     loadGraph();
 
-                    $('#twitter-results').append('<br>' + $('<div/>').text(msg.id + ' ' + msg.data).html());
+                    $('#twitter-results').append(
+                        '<br>' + $('<div/>').text('(' + x.toFixed(2) + ', ' + y.toFixed(2) + ') ' + msg.text).html());
                 });
 
                 socket.on('complete', function(msg) {

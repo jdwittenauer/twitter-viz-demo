@@ -10,6 +10,8 @@ from flask_socketio import *
 from celery import Celery, chain
 from pattern.web import Twitter
 from sklearn.externals import joblib
+from gensim.models import Word2Vec
+from tokenizer import *
 
 
 # Initialize and configure Flask
@@ -31,18 +33,35 @@ celery.conf.update(app.config)
 # Load transforms and models
 vectorizer = joblib.load(path + 'vectorizer.pkl')
 classifier = joblib.load(path + 'classifier.pkl')
+pca = joblib.load(path + 'pca.pkl')
+word2vec = Word2Vec.load(path + 'word2vec.pkl')
 
 
 def classify_tweet(tweet):
     """
-    Classify a tweet with either a positive (1) or negative (-1) sentiment.
+    Classify a tweet with either a positive (1) or negative (0) sentiment.
     """
     pred = classifier.predict(vectorizer.transform(np.array([tweet.text])))
 
-    if pred[0] == 1:
-        return '1'
-    else:
-        return '-1'
+    return str(pred[0])
+
+
+def vectorize_tweet(tweet):
+    """
+    Convert a tweet to vector space using a pre-trained word2vec model, then transform
+    a sum of the vectorized words to 2-dimensional space using PCA to give a simple
+    2D coordinate representation of the original tweet.
+    """
+    tweet_vector = np.zeros(100)
+    for word in tokenize(tweet.text):
+        if word in word2vec.vocab:
+            tweet_vector = tweet_vector + word2vec[word]
+
+    components = pca.transform(tweet_vector)
+    x = components[0, 0]
+    y = components[0, 1]
+
+    return str(x), str(y)
 
 
 @celery.task
@@ -57,9 +76,13 @@ def create_stream(phrase, queue):
     for i in range(60):
         stream.update()
         for tweet in reversed(stream):
+            sentiment = classify_tweet(tweet)
+            x, y = vectorize_tweet(tweet)
             local.emit('tweet', {'id': str(i),
-                                 'data': str(tweet.text.encode('ascii', 'ignore')),
-                                 'sentiment': classify_tweet(tweet)})
+                                 'text': str(tweet.text.encode('ascii', 'ignore')),
+                                 'sentiment': sentiment,
+                                 'x': x,
+                                 'y': y})
         stream.clear()
         time.sleep(1)
 

@@ -1,9 +1,8 @@
 import os
 import sys
-path = os.path.realpath('') + '/scripts/'
+path = os.path.realpath('') + '/'
 sys.path.append(path)
 
-import numpy as np
 import pandas as pd
 from sklearn.decomposition.pca import PCA
 from sklearn.externals import joblib
@@ -44,15 +43,6 @@ def main():
     joblib.dump(classifier, path + 'classifier.pkl')
     joblib.dump(pca, path + 'pca.pkl')
     word2vec.save(path + 'word2vec.pkl')
-
-    tweet = data['SentimentText'][0]
-    tweet_vector = np.zeros(100)
-    for word in tokenize(tweet):
-        if word in word2vec.vocab:
-            tweet_vector = tweet_vector + word2vec[word]
-    components = pca.transform(tweet_vector)
-    x = components[0, 0]
-    y = components[0, 1]
 
     print('Process complete.')
 
