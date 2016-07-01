@@ -1,7 +1,10 @@
 # Twitter Visualization Demo
-Experiment using various python-based technologies.  Initial version still in-progress!
 
-## Quick Setup
+![twitter-viz-demo](https://raw.githubusercontent.com/jdwittenauer/twitter-viz-demo/master/example.png)
+
+This project leverages a variety of technologies to visualize a real-time stream of twitter data using sentiment analysis and word vector space mapping via word2vec.  It runs on a local Flask instance with a Redis/Flask back-end and uses Socket-IO push events to the web client.  Twitter integration is managed by the pattern library.  NVD3 is used on the front-end to create the visualization.
+
+## Quick Setup Instructions
 
 - Clone this repository
 - Install dependencies (Flask, Flask-SocketIO, Redis, Celery, Pattern, Numpy, Pandas, Scikit-learn, Gensim)
